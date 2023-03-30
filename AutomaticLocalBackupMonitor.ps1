@@ -2,12 +2,13 @@
 #Author:            Andrew (AJ) Opfer
 #Creation Date:     2022-12-04
 #Phase:             Production
-#Version:           1.0.0
+#Version:           1.0.1
 #Description:       Small executable designed to create automated email alerting job on a machine.  User can define
 #                   file(s) to be monitored, time to check for them to be expected to be updated, and provide emails
 #                   for sending and receiving the alert(s).  This script is designed only to function with SMTP
 #                   emails with SSL enabled.  Only supports a single sending email address.
 #
+#Updates:           3/22/2023 - 1.0.1 - Updated Scheduled Task creation to disable "Synchronize across time zones" setting
 
 # ------------------ Variable Reference ------------------
 # ========================================================
@@ -218,6 +219,7 @@ Send-MailMessage -To $Recipient -From $Sender -UseSsl -Port $Port -SmtpServer $S
 	$argument = "cd " + $ScriptPath + ";& '.\" + $BackupName + ".ps1'"
 	$action = New-ScheduledTaskAction -Execute "%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe" -Argument $argument
 	$trigger =  New-ScheduledTaskTrigger -Daily -At $MonitorTime
+    $trigger.StartBoundary = (Get-Date -Date $MonitorTime -Format 'yyyy-MM-ddTHH:mm:ss')    #1.0.1 - "Synchronize across time zones"
 	Register-ScheduledTask -Action $action -RunLevel Highest -Trigger $trigger -User $User -Password $Password -TaskName $BackupName -Description ("Checks to see if today's " + $BackupName + " file was created.") -TaskPath "AutomaticLocalBackupMonitor" | Out-Null
 
 	$sysPrior = "TRUE"
